@@ -1,0 +1,10 @@
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.USA">
+    <FedWireHeader>
+        <RefNum>FED_{{REF}}</RefNum>
+        <MarketId>{{MARKET}}</MarketId>
+    </FedWireHeader>
+    <TransactionData>
+        <USA_Extension>FED_WIRE_ID_123</USA_Extension>
+        <Payload>{{PAYLOAD}}</Payload>
+    </TransactionData>
+</Document>

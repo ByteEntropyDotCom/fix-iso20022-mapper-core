@@ -1,0 +1,10 @@
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.JP">
+    <ZenginHeader>
+        <MsgId>JP_BOJ_{{REF}}</MsgId>
+    </ZenginHeader>
+    <JP_Specific_Data>
+        <Status>ACCEPTED</Status>
+        <MarketCode>TSE</MarketCode>
+    </JP_Specific_Data>
+    <Payload>{{PAYLOAD}}</Payload>
+</Document>

@@ -1,0 +1,10 @@
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.UK">
+    <AppHdr>
+        <MsgId>UK_BOE_{{REF}}</MsgId>
+    </AppHdr>
+    <CHAPS_Extension>
+        <SettlementMethod>RTGS</SettlementMethod>
+        <UK_Ref>CHAPS_GEN_{{REF}}</UK_Ref>
+    </CHAPS_Extension>
+    <Payload>{{PAYLOAD}}</Payload>
+</Document>

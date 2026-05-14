@@ -1,0 +1,11 @@
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.SG">
+    <AppHdr>
+        <MsgId>SG_MAS_{{REF}}</MsgId>
+        <CreDt>{{MARKET}}_TIMESTAMP</CreDt>
+    </AppHdr>
+    <SG_Specific_Block>
+        <MEPS_PLUS_Ref>MEPS_{{REF}}</MEPS_PLUS_Ref>
+        <Status>PROCESSED</Status>
+    </SG_Specific_Block>
+    <Payload>{{PAYLOAD}}</Payload>
+</Document>

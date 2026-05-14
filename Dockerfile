@@ -2,32 +2,35 @@
 FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (cached layer)
+# Cache dependencies
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-# Copy source code and build the jar
+# Copy source and build
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Stage 2: Runtime environment
+# Stage 2: Runtime
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Create a non-root user for security
+# Security: Non-root user
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 
-# Copy the built jar from Stage 1
+# Copy the JAR
 COPY --from=build /app/target/*.jar app.jar
 
-# Copy templates, XSDs, and Dictionary (Important for your Mapper!)
-# These are usually in src/main/resources, which are packed into the JAR,
-# but if you want to override them externally, you'd mount them as volumes.
+# (Optional) Create a directory for external templates/configs
+# This allows mounting external XSDs or Templates later
+# VOLUME ["/app/config"]
 
-# Expose the Netty TCP Port and Actuator Port
 EXPOSE 9876
 EXPOSE 8080
 
-# Run the application with optimized Virtual Thread settings
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Optimized for Virtual Threads & Low Latency
+ENTRYPOINT ["java", \
+            "-XX:+UseZGC", \
+            "-XX:+ZGenerational", \
+            "-Djava.security.egd=file:/dev/./urandom", \
+            "-jar", "app.jar"]

@@ -44,7 +44,7 @@ Send a sample Execution Report via Netcat:
 
 ```
 Bash
-echo -e "8=FIX.4.4\u000135=8\u000144=100.25\u000110=031\u0001" | nc localhost 9876
+printf "8=FIX.4.4|9=122|35=8|44=100.25|10=031|\n" | nc localhost 9876
 ```
 
 ### 📊 Performance

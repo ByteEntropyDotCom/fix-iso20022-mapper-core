@@ -35,8 +35,12 @@ public class UniversalMessageMapper implements TransformationStrategy {
     @Override
     public boolean supports(String payload) {
         if (appConfig.mappingRules() == null) return false;
-        return appConfig.mappingRules().values().stream()
-                .anyMatch(rule -> rule.contains("=") && payload.contains(rule.substring(0, rule.lastIndexOf("="))));
+        
+        return appConfig.mappingRules().values().stream().anyMatch(rule -> {
+            // Extracts "35=8" from "35=8=execution-report"
+            String criteria = rule.substring(0, rule.lastIndexOf("=")); 
+            return payload.contains(criteria);
+        });
     }
 
     @Override
@@ -47,8 +51,22 @@ public class UniversalMessageMapper implements TransformationStrategy {
     @Override
     public String toIso(String fixPayload) {
         try {
-            // 1. QuickFIX/J Parsing
-            Message fixMsg = new Message(fixPayload, dictionary, false);
+            // FIX: Normalize delimiters. If the message uses pipes (common in testing/nc), 
+            // or if SOH was stripped, convert pipes back to the SOH (\u0001) QuickFIX expects.
+            String normalizedPayload = fixPayload;
+            if (fixPayload.contains("|")) {
+                normalizedPayload = fixPayload.replace('|', '\u0001');
+            }
+            
+            // Ensure the message ends with a delimiter if it's missing
+            if (!normalizedPayload.endsWith("\u0001")) {
+                normalizedPayload += "\u0001";
+            }
+
+            // 1. QuickFIX/J Parsing - Use the normalized version
+            Message fixMsg = new Message();
+            fixMsg.fromString(normalizedPayload, dictionary, false);
+            
             String msgType = fixMsg.getHeader().getString(35);
             
             // 2. Resolve Template
@@ -63,9 +81,13 @@ public class UniversalMessageMapper implements TransformationStrategy {
 
             // 3. Dynamic Replacement
             String ref = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            
+            // For the XML output, we use pipes so the payload is human-readable in the XML
+            String readablePayload = normalizedPayload.replace('\u0001', '|');
+            
             String resultXml = template
                     .replace("{{REF}}", ref)
-                    .replace("{{PAYLOAD}}", fixPayload.replace('\u0001', '|'))
+                    .replace("{{PAYLOAD}}", readablePayload)
                     .replace("{{MARKET}}", appConfig.market());
 
             // 4. XSD Validation (if XSD exists)
@@ -76,7 +98,7 @@ public class UniversalMessageMapper implements TransformationStrategy {
             throw new RuntimeException("Mapper Error [" + appConfig.market() + "]: " + e.getMessage(), e);
         }
     }
-
+    
     private void validateIfPresent(String xml, String market, String template) {
         try {
             String xsdPath = String.format("xsd/%s/%s.xsd", market, template);
